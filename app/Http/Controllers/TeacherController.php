@@ -7,6 +7,7 @@ use App\Models\Unit;
 use App\Models\Course;
 use App\Models\Enrollment;
 use App\Models\User;
+use App\Models\Marks;
 
 
 class TeacherController extends Controller
@@ -46,29 +47,41 @@ class TeacherController extends Controller
         return redirect()->back()->with('success', 'Unit added successfully!');
     }
     
-    public function storeMarks(Request $request, $studentId)
-    {
-        $request->validate([
-            'marks' => 'required|array',
-            'marks.*' => 'numeric|min:0|max:100',
-            'grades' => 'required|array',
-            'grades.*' => 'string|max:2'
-        ]);
     
-        $student = User::where('role', 'student')->findOrFail($studentId);
-    
-        foreach ($request->marks as $unitId => $mark) {
-            $grade = $request->grades[$unitId];
-    
-            // Use the correct relationship method
-            $student->registeredUnits()->updateExistingPivot($unitId, [
-                'marks' => $mark,
-                'grade' => $grade
-            ]);
-        }
-    
-        return redirect()->route('teacher.dashboard')->with('success', 'Marks updated successfully.');
+
+public function storeMarks(Request $request, $studentId)
+{
+    $teacher = Auth::user();
+
+    $request->validate([
+        'marks' => 'required|array',
+        'marks.*' => 'numeric|min:0|max:100',
+        'grades' => 'required|array',
+        'grades.*' => 'string|max:2'
+    ]);
+
+    $student = User::where('role', 'student')->findOrFail($studentId);
+
+    foreach ($request->marks as $unitId => $mark) {
+        $grade = $request->grades[$unitId];
+
+         // Ensure the teacher only updates marks for their own units
+         $unit = Unit::where('id', $unitId)->where('teacher_id', $teacher->id)->first();
+
+         if (!$unit) {
+             return redirect()->back()->withErrors(['error' => 'You are not authorized to input marks for this unit.']);
+         }
+
+        // Use Marks model instead of pivot table update
+        Marks::updateOrCreate(
+            ['student_id' => $student->id, 'unit_id' => $unitId], // Unique key
+            ['marks' => $mark, 'grade' => $grade] // Values to update
+        );
     }
+
+    return redirect()->route('teacher.dashboard')->with('success', 'Marks updated successfully.');
+}
+
 
     public function inputMarks($studentId)
 {

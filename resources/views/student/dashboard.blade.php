@@ -78,7 +78,7 @@
                         <tr class="border-b">
                             <td class="p-3">{{ $result->unit->course->name }}</td>
                             <td class="p-3">{{ $result->unit->name }} ({{ $result->unit->code }})</td>
-                            <td class="p-3">{{ $result->score }}</td>
+                            <td class="p-3">{{ $result->marks }}</td>
                             <td class="p-3 font-semibold 
                                 @if($result->score >= 70) text-green-600
                                 @elseif($result->score >= 50) text-yellow-600

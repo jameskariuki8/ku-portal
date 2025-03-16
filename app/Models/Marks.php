@@ -4,11 +4,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Result extends Model
+class Marks extends Model
 {
     use HasFactory;
 
-    protected $table = 'marks'; // Ensure Laravel uses the correct table
+    protected $table = 'marks'; // Ensure it matches your table name
 
     protected $fillable = ['student_id', 'unit_id', 'marks', 'grade'];
 
